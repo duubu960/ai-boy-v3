@@ -1,0 +1,29 @@
+# ai-boy-v3（V3.0 独立 AI 男生）— Render 部署蓝图（Blueprint）
+# 独立新服务、独立新库：不共用小米 / 可爱的乖乖 的 Render 服务、Neon 库、Key 与数据。
+# 用法（手机也能操作）：在 GitHub 建一个新空仓库，只上传两个文件——
+# 本文件 render.yaml 和 app.tar.gz（项目源码打包，见 app/docs/部署准备.md）。
+# 然后在 Render 里点 New → Blueprint，选这个仓库，Render 会按下面的配置建一个免费 Web Service。
+# 注意：这个文件里没有任何密钥。DATABASE_URL 和 DEEPSEEK_API_KEY
+# 在 Render 里第一次部署时会让你手动填（sync: false），
+# 填完后存在 Render 的环境变量里，不会进代码仓库。
+# 数据库用 Neon 免费档：先在 Neon 单独新建项目/数据库（不要复用可爱的乖乖的库），
+# 把 pooled 连接串贴到 Render 的 DATABASE_URL；不填 DATABASE_URL 时服务用本地 SQLite（仅本地开发）。
+services:
+  - type: web
+    name: ai-boy-v3
+    env: node
+    plan: free
+    buildCommand: tar -xzf app.tar.gz && npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '22'
+      # Neon PostgreSQL 连接串（在 Neon 控制台复制 pooled 连接串，贴到 Render 里）
+      - key: DATABASE_URL
+        sync: false
+      # DeepSeek API Key（新 Key，与小米/可爱的乖乖不共用；只放 Render 环境变量）
+      - key: DEEPSEEK_API_KEY
+        sync: false
